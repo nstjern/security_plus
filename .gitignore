@@ -1,0 +1,13 @@
+# Personal study data and generated guides
+progress.json
+review_guide.txt
+ai_review_cache.json
+
+# Secrets and local environments
+.env
+.venv/
+
+# Python and editor artifacts
+__pycache__/
+*.py[cod]
+.DS_Store
