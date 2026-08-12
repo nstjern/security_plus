@@ -6,6 +6,21 @@ covering the five CompTIA Security+ SY0-701 exam domains.
 This project is not affiliated with or endorsed by CompTIA. Its questions are
 original study material, not official exam items.
 
+The project is being rebuilt as a full-stack web application. The terminal
+program below still works and is unchanged; the API in `backend/` reuses its
+domain logic so both rank weaknesses identically.
+
+| Path | What it is |
+|---|---|
+| `quiz.py`, `test_quiz.py` | The original terminal program |
+| `questions.json` | The question bank, shared by both interfaces |
+| `backend/` | FastAPI service — see [backend/README.md](backend/README.md) |
+| `contracts/` | Generated API contract and architecture decision records |
+| `SECURITY.md` | Security controls, mapped to SY0-701 domains |
+
+Start the web stack with `docker compose up --build`, then open
+http://localhost:8000/docs.
+
 ## Run
 
 From this folder:

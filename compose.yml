@@ -1,0 +1,43 @@
+# Production-shaped stack: the API image runs the installed package, no source mount.
+# Development conveniences live in compose.override.yml, which Compose merges automatically.
+#
+#   docker compose up --build
+
+name: security-plus
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://app:app@db:5432/app
+      CORS_ORIGINS: '["http://localhost:5173"]'
+      LOG_LEVEL: INFO
+    env_file:
+      # Optional local overrides; gitignored. See .env.example.
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+volumes:
+  pgdata:

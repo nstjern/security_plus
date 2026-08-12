@@ -1,0 +1,35 @@
+# Install once with: pre-commit install
+# These hooks mirror the CI lint job, so formatting never fails a pull request.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: ^backend/app/
+        args: [--config-file, backend/pyproject.toml]
+        additional_dependencies:
+          - fastapi
+          - pydantic
+          - pydantic-settings
+          - sqlmodel

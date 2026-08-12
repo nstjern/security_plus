@@ -1,0 +1,131 @@
+name: CI
+
+# Unlike the class template, these triggers are live: every pull request is gated.
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+# A new push cancels the previous run for the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint:
+    name: Lint and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Ruff lint
+        run: ruff check .
+      - name: Ruff format
+        run: ruff format --check .
+      - name: mypy
+        run: mypy app
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: pytest
+        run: pytest
+
+  contract:
+    name: API contract drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Regenerate the OpenAPI document
+        run: python -m app.export_openapi
+      - name: Fail if the committed contract has drifted
+        run: git diff --exit-code ../contracts/openapi.json
+
+  migrations:
+    name: Migration drift
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+    env:
+      DATABASE_URL: postgresql+psycopg://app:app@localhost:5432/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Apply migrations
+        run: alembic upgrade head
+      - name: Fail if models and migrations disagree
+        run: alembic check
+      - name: Verify downgrade path
+        run: alembic downgrade base
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Known vulnerabilities in dependencies
+        run: pip-audit --desc --skip-editable
+
+  image:
+    name: Container build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the API image
+        run: docker build -f backend/Dockerfile -t security-plus-api:ci .
+      - name: Confirm it runs as a non-root user
+        run: |
+          user=$(docker run --rm --entrypoint sh security-plus-api:ci -c 'id -un')
+          echo "container user: $user"
+          test "$user" = "appuser"

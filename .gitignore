@@ -11,3 +11,14 @@ ai_review_cache.json
 __pycache__/
 *.py[cod]
 .DS_Store
+
+# Tooling caches and coverage output
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Reference material cloned for comparison, not part of this project
+reference/

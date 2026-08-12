@@ -1,0 +1,24 @@
+# Development overrides, merged automatically by `docker compose up`.
+# CI and any deployment use `docker compose -f compose.yml` to skip this file.
+
+services:
+  api:
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --reload
+    environment:
+      LOG_LEVEL: DEBUG
+    volumes:
+      # Source mount enables auto-reload; the question bank is mounted read-only.
+      - ./backend:/app
+      - ./questions.json:/srv/questions.json:ro
+
+  db:
+    # Published for local psql access during development only.
+    ports:
+      - "5432:5432"
