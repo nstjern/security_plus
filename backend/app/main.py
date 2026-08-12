@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import catalog, health, questions
+from app.api.routes import auth, catalog, health, progress, questions, review, sessions
 from app.core.config import Settings, get_settings
 from app.core.constants import API_VERSION
 from app.core.logging import configure_logging
@@ -56,8 +56,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.include_router(health.router)
+    app.include_router(auth.router, prefix="/api")
     app.include_router(catalog.router, prefix="/api")
     app.include_router(questions.router, prefix="/api")
+    app.include_router(sessions.router, prefix="/api")
+    app.include_router(progress.router, prefix="/api")
+    app.include_router(review.router, prefix="/api")
     return app
 
 

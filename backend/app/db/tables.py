@@ -7,14 +7,12 @@ Only learner-owned data lives here. The question bank stays in version-controlle
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import JSON, Column, DateTime, UniqueConstraint
 from sqlmodel import Field, SQLModel
 
-
-def _utcnow() -> datetime:
-    return datetime.now(UTC)
+from app.core.clock import utcnow as _utcnow
 
 
 def _timestamp_column(*, nullable: bool = False) -> Column[datetime]:
@@ -29,6 +27,21 @@ class User(SQLModel, table=True):
     username: str = Field(unique=True, index=True, max_length=80)
     password_hash: str = Field(max_length=255)
     created_at: datetime = Field(default_factory=_utcnow, sa_column=_timestamp_column())
+
+
+class AuthSession(SQLModel, table=True):
+    """A logged-in session. The cookie carries the token; only its digest is stored."""
+
+    __tablename__ = "auth_sessions"
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    token_hash: str = Field(max_length=64, unique=True, index=True)
+    # Held server-side so the double-submit value is checked against the session, not
+    # merely against a second cookie the same attacker could have set.
+    csrf_token: str = Field(max_length=64)
+    created_at: datetime = Field(default_factory=_utcnow, sa_column=_timestamp_column())
+    expires_at: datetime = Field(sa_column=_timestamp_column())
 
 
 class QuestionProgress(SQLModel, table=True):

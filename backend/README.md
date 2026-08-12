@@ -84,18 +84,24 @@ Once the frontend exists, its TypeScript types are generated from that same file
 ```
 app/
   main.py            Application factory, middleware, router wiring
-  core/              Settings, logging, security headers, exam taxonomy
+  core/              Settings, logging, security headers, hashing, rate limiting
   models/            Domain models: questions, progress, review guide
-  services/          Question bank, statistics, review guide construction
+  services/          Question bank, statistics, review guide, session rules
+  repositories/      Database reads and writes, one module per aggregate
   db/                SQLModel tables and session management
-  api/               Routes, request/response schemas, dependencies
+  api/               Routes, schemas, dependencies, cookie handling
   export_openapi.py  Writes contracts/openapi.json
 alembic/             Migrations
 tests/unit/          Domain logic, ported from ../test_quiz.py
-tests/api/           HTTP behaviour, including response hardening
+tests/api/           HTTP behaviour, including auth and response hardening
 ```
 
+Routes depend on services and repositories; services never import repositories, so the rules
+about how a session behaves stay testable without a database.
+
 ## Current endpoints
+
+Public:
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -105,5 +111,50 @@ tests/api/           HTTP behaviour, including response hardening
 | GET | `/api/questions` | Browse questions, filtered and paginated |
 | GET | `/api/questions/{id}` | One question |
 
-Answers and explanations are deliberately absent from every response above. They are revealed
-only in the reply to a submitted answer, which arrives with study sessions in the next phase.
+Authentication:
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/api/auth/register` | Create an account and sign in |
+| POST | `/api/auth/login` | Sign in; rate limited |
+| POST | `/api/auth/logout` | Revoke the session |
+| GET | `/api/auth/me` | The signed-in user |
+
+Signed in:
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/api/sessions` | Start a study session |
+| GET | `/api/sessions` | Recent sessions |
+| GET | `/api/sessions/{id}` | Read a session |
+| GET | `/api/sessions/{id}/current-question` | The question awaiting an answer |
+| POST | `/api/sessions/{id}/answer` | Submit an answer, receive the explanation |
+| POST | `/api/sessions/{id}/end` | End a session early |
+| GET | `/api/sessions/{id}/summary` | How the session went |
+| GET | `/api/progress/summary` | Accuracy by domain |
+| GET | `/api/progress/subjects` | Weakest subjects |
+| GET | `/api/progress/missed` | Questions missed at least once |
+| GET | `/api/review-guide` | Weak areas and the concepts behind each miss |
+
+Answers and explanations never appear in a browsing or current-question response. Grading
+happens server-side, and the key is returned only in the reply to a submitted answer.
+
+## Calling it from a browser
+
+Authentication uses cookies, not a bearer token, so requests need `credentials: 'include'`.
+State-changing requests must echo the CSRF cookie in an `X-CSRF-Token` header:
+
+```js
+await fetch("http://localhost:8000/api/sessions", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": readCookie("sp_csrf"),
+  },
+  body: JSON.stringify({ mode: "practice", count: 20 }),
+});
+```
+
+Study modes are `all`, `domain`, `chapter`, `subject`, `objective`, `missed`, and `practice`.
+The filtered modes need a `filter_value`; `practice` takes a `count`.

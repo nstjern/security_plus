@@ -11,16 +11,46 @@ so the gap between the current state and the target state stays visible.
 | Control | Status | SY0-701 domain |
 |---|---|---|
 | Answers and explanations are never returned by browsing endpoints | Implemented | 3.0 Security Architecture |
+| Answers graded server-side; the key is sent only after the learner commits | Implemented | 3.0 Security Architecture |
 | Request and response validation on every endpoint via Pydantic schemas | Implemented | 2.0 Threats and Mitigations |
 | Parameterized queries only; no string-built SQL | Implemented | 2.0 Threats and Mitigations |
 | Interactive API documentation disabled in production | Implemented | 3.0 Security Architecture |
-| Argon2 password hashing | Planned | 1.0 General Security Concepts |
-| `HttpOnly`, `Secure`, `SameSite=Lax` session cookies rather than tokens in browser storage | Planned | 1.0 General Security Concepts |
-| Double-submit CSRF tokens on state-changing requests | Planned | 2.0 Threats and Mitigations |
-| Rate limiting and lockout on authentication endpoints | Planned | 4.0 Security Operations |
+| Argon2id password hashing, with transparent rehash when cost parameters change | Implemented | 1.0 General Security Concepts |
+| `HttpOnly`, `Secure`, `SameSite=Lax` session cookies rather than tokens in browser storage | Implemented | 1.0 General Security Concepts |
+| Sessions revocable server-side, so sign-out invalidates a captured cookie | Implemented | 1.0 General Security Concepts |
+| Session tokens stored only as keyed digests, peppered with `SECRET_KEY` | Implemented | 3.0 Security Architecture |
+| Double-submit CSRF tokens, validated against the server-side session | Implemented | 2.0 Threats and Mitigations |
+| Rate limiting on sign-in, with `Retry-After` | Implemented | 4.0 Security Operations |
+| Uniform failure message and equalized timing on sign-in | Implemented | 2.0 Threats and Mitigations |
+| Every session and progress query scoped to the owning user | Implemented | 3.0 Security Architecture |
+| Account lockout after sustained failures | Planned | 4.0 Security Operations |
+| Password breach-list screening | Planned | 1.0 General Security Concepts |
 
 The session cookie decision and its trade-offs are recorded in
 [ADR 0004](contracts/adr/0004-session-cookies-instead-of-jwt-in-storage.md).
+
+### Notes on specific choices
+
+**Password length over composition.** Registration requires 12 characters and imposes no
+character-class rules. Complexity requirements push people toward predictable substitutions
+without adding meaningful entropy.
+
+**Two tokens, two purposes.** The session cookie is `HttpOnly` so injected script cannot read
+it. The CSRF cookie is deliberately readable, because the frontend has to echo it in a header;
+its value alone proves nothing, since the server compares it against the session record rather
+than against the cookie.
+
+**User enumeration.** A wrong password and an unknown username return the same status and the
+same message. When the username does not exist, the server still verifies against a throwaway
+hash so the response takes comparable time.
+
+**Rate limiting scope.** Counters live in the worker process, so the effective limit scales
+with worker count. That is adequate for slowing credential stuffing here and inadequate for
+anything larger; moving the counters to Postgres or Redis is the upgrade path.
+
+**Answer shuffling.** Choice order is derived from the session and question identifiers with a
+non-cryptographic generator. Presentation order is a usability concern, not a secret: the
+answer key is never sent before the learner commits.
 
 ## Response headers
 

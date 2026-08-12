@@ -32,9 +32,18 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
     log_level: str = "INFO"
 
+    session_cookie_name: str = "sp_session"
+    csrf_cookie_name: str = "sp_csrf"
+    session_lifetime_hours: int = 24
+
     @property
     def is_production(self) -> bool:
         return self.environment is Environment.production
+
+    @property
+    def cookie_secure(self) -> bool:
+        """Browsers reject Secure cookies over plain HTTP, which development uses."""
+        return self.is_production
 
     @model_validator(mode="after")
     def reject_development_secret_in_production(self) -> Settings:

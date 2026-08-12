@@ -1,6 +1,98 @@
 {
   "components": {
     "schemas": {
+      "AnswerRequest": {
+        "description": "A displayed letter, or null to skip the question.",
+        "properties": {
+          "choice": {
+            "anyOf": [
+              {
+                "enum": [
+                  "a",
+                  "b",
+                  "c",
+                  "d"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choice"
+          }
+        },
+        "title": "AnswerRequest",
+        "type": "object"
+      },
+      "AnswerResponse": {
+        "properties": {
+          "correct_choice": {
+            "title": "Correct Choice",
+            "type": "string"
+          },
+          "correct_choice_text": {
+            "title": "Correct Choice Text",
+            "type": "string"
+          },
+          "correction_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Note"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "next_available": {
+            "title": "Next Available",
+            "type": "boolean"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "result": {
+            "$ref": "#/components/schemas/AttemptResult"
+          },
+          "session_status": {
+            "title": "Session Status",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "result",
+          "correct_choice",
+          "correct_choice_text",
+          "explanation",
+          "correction_note",
+          "position",
+          "total",
+          "session_status",
+          "next_available"
+        ],
+        "title": "AnswerResponse",
+        "type": "object"
+      },
+      "AttemptResult": {
+        "enum": [
+          "correct",
+          "incorrect",
+          "skipped"
+        ],
+        "title": "AttemptResult",
+        "type": "string"
+      },
       "CatalogResponse": {
         "description": "Every value that can be used to filter a study session.",
         "properties": {
@@ -47,6 +139,132 @@
         "title": "CatalogResponse",
         "type": "object"
       },
+      "DomainPriority": {
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "incorrect": {
+            "title": "Incorrect",
+            "type": "integer"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "weakness_score": {
+            "title": "Weakness Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rank",
+          "domain",
+          "accuracy",
+          "incorrect",
+          "weakness_score"
+        ],
+        "title": "DomainPriority",
+        "type": "object"
+      },
+      "FocusArea": {
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewConcept"
+            },
+            "title": "Concepts",
+            "type": "array"
+          },
+          "correct": {
+            "title": "Correct",
+            "type": "integer"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "incorrect": {
+            "title": "Incorrect",
+            "type": "integer"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "weakness_score": {
+            "title": "Weakness Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rank",
+          "domain",
+          "subject",
+          "accuracy",
+          "correct",
+          "incorrect",
+          "weakness_score"
+        ],
+        "title": "FocusArea",
+        "type": "object"
+      },
+      "GroupStatsResponse": {
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "correct": {
+            "title": "Correct",
+            "type": "integer"
+          },
+          "graded": {
+            "title": "Graded",
+            "type": "integer"
+          },
+          "incorrect": {
+            "title": "Incorrect",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "attempts",
+          "correct",
+          "incorrect",
+          "skipped",
+          "graded",
+          "accuracy"
+        ],
+        "title": "GroupStatsResponse",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -76,6 +294,95 @@
           "version"
         ],
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "MissedQuestionsResponse": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "question_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Question Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "question_ids"
+        ],
+        "title": "MissedQuestionsResponse",
+        "type": "object"
+      },
+      "ProgressSummaryResponse": {
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "correct": {
+            "title": "Correct",
+            "type": "integer"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/GroupStatsResponse"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "graded": {
+            "title": "Graded",
+            "type": "integer"
+          },
+          "incorrect": {
+            "title": "Incorrect",
+            "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "attempts",
+          "correct",
+          "incorrect",
+          "skipped",
+          "graded",
+          "accuracy",
+          "domains"
+        ],
+        "title": "ProgressSummaryResponse",
         "type": "object"
       },
       "QuestionPage": {
@@ -177,6 +484,347 @@
         "title": "ReadinessResponse",
         "type": "object"
       },
+      "RegisterRequest": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 80,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "RegisterRequest",
+        "type": "object"
+      },
+      "ReviewConcept": {
+        "properties": {
+          "chapter": {
+            "title": "Chapter",
+            "type": "string"
+          },
+          "correct_choice": {
+            "title": "Correct Choice",
+            "type": "string"
+          },
+          "correction_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Note"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "objective": {
+            "title": "Objective",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "objective",
+          "chapter",
+          "prompt",
+          "correct_choice",
+          "explanation"
+        ],
+        "title": "ReviewConcept",
+        "type": "object"
+      },
+      "ReviewGuide": {
+        "properties": {
+          "focus_areas": {
+            "items": {
+              "$ref": "#/components/schemas/FocusArea"
+            },
+            "title": "Focus Areas",
+            "type": "array"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "overall_accuracy": {
+            "title": "Overall Accuracy",
+            "type": "number"
+          },
+          "priority_domains": {
+            "items": {
+              "$ref": "#/components/schemas/DomainPriority"
+            },
+            "title": "Priority Domains",
+            "type": "array"
+          },
+          "total_correct": {
+            "title": "Total Correct",
+            "type": "integer"
+          },
+          "total_graded": {
+            "title": "Total Graded",
+            "type": "integer"
+          },
+          "total_incorrect": {
+            "title": "Total Incorrect",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_at",
+          "total_graded",
+          "total_correct",
+          "total_incorrect",
+          "overall_accuracy"
+        ],
+        "title": "ReviewGuide",
+        "type": "object"
+      },
+      "SessionCreateRequest": {
+        "properties": {
+          "count": {
+            "anyOf": [
+              {
+                "maximum": 200.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "filter_value": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Value"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/StudyMode"
+          },
+          "shuffle_answers": {
+            "default": false,
+            "title": "Shuffle Answers",
+            "type": "boolean"
+          },
+          "shuffle_questions": {
+            "default": true,
+            "title": "Shuffle Questions",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "title": "SessionCreateRequest",
+        "type": "object"
+      },
+      "SessionQuestionResponse": {
+        "properties": {
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "question": {
+            "$ref": "#/components/schemas/QuestionSummary"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "position",
+          "total",
+          "question"
+        ],
+        "title": "SessionQuestionResponse",
+        "type": "object"
+      },
+      "SessionSummaryResponse": {
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "answered": {
+            "title": "Answered",
+            "type": "integer"
+          },
+          "correct": {
+            "title": "Correct",
+            "type": "integer"
+          },
+          "incorrect": {
+            "title": "Incorrect",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total_questions": {
+            "title": "Total Questions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "status",
+          "total_questions",
+          "answered",
+          "correct",
+          "incorrect",
+          "skipped",
+          "accuracy"
+        ],
+        "title": "SessionSummaryResponse",
+        "type": "object"
+      },
+      "StudyMode": {
+        "enum": [
+          "all",
+          "domain",
+          "chapter",
+          "subject",
+          "objective",
+          "missed",
+          "practice"
+        ],
+        "title": "StudyMode",
+        "type": "string"
+      },
+      "StudySessionResponse": {
+        "properties": {
+          "answered": {
+            "title": "Answered",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "filters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Filters",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "shuffle_answers": {
+            "title": "Shuffle Answers",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "total_questions": {
+            "title": "Total Questions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "mode",
+          "filters",
+          "total_questions",
+          "answered",
+          "status",
+          "shuffle_answers",
+          "created_at",
+          "ended_at"
+        ],
+        "title": "StudySessionResponse",
+        "type": "object"
+      },
+      "UserResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "created_at"
+        ],
+        "title": "UserResponse",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -226,6 +874,123 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/auth/login": {
+      "post": {
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sign in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Sign out and revoke the session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "read_current_user_api_auth_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The signed-in user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "register_api_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create an account and sign in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/catalog": {
       "get": {
         "operationId": "read_catalog_api_catalog_get",
@@ -244,6 +1009,97 @@
         "summary": "List every available filter value",
         "tags": [
           "catalog"
+        ]
+      }
+    },
+    "/api/progress/missed": {
+      "get": {
+        "operationId": "read_missed_questions_api_progress_missed_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissedQuestionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Questions answered incorrectly at least once",
+        "tags": [
+          "progress"
+        ]
+      }
+    },
+    "/api/progress/subjects": {
+      "get": {
+        "operationId": "read_weakest_subjects_api_progress_subjects_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupStatsResponse"
+                  },
+                  "title": "Response Read Weakest Subjects Api Progress Subjects Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Weakest subjects, least accurate first",
+        "tags": [
+          "progress"
+        ]
+      }
+    },
+    "/api/progress/summary": {
+      "get": {
+        "operationId": "read_summary_api_progress_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Accuracy by domain",
+        "tags": [
+          "progress"
         ]
       }
     },
@@ -406,6 +1262,347 @@
         "summary": "Read one question",
         "tags": [
           "questions"
+        ]
+      }
+    },
+    "/api/review-guide": {
+      "get": {
+        "description": "Empty focus areas mean nothing has been answered incorrectly yet.",
+        "operationId": "read_review_guide_api_review_guide_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "max_focus_areas",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 50,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Focus Areas"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewGuide"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Weak areas and the concepts behind every missed question",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/api/sessions": {
+      "get": {
+        "operationId": "list_sessions_api_sessions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StudySessionResponse"
+                  },
+                  "title": "Response List Sessions Api Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Recent sessions",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "post": {
+        "operationId": "create_session_api_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudySessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start a study session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}": {
+      "get": {
+        "operationId": "read_session_api_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudySessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read a session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/answer": {
+      "post": {
+        "operationId": "submit_answer_api_sessions__session_id__answer_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit an answer and receive the explanation",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/current-question": {
+      "get": {
+        "operationId": "read_current_question_api_sessions__session_id__current_question_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionQuestionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The question awaiting an answer",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/end": {
+      "post": {
+        "operationId": "end_session_api_sessions__session_id__end_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudySessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "End a session early",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/summary": {
+      "get": {
+        "operationId": "read_session_summary_api_sessions__session_id__summary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "How the session went",
+        "tags": [
+          "sessions"
         ]
       }
     },
