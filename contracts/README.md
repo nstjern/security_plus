@@ -9,8 +9,15 @@ cd backend && python -m app.export_openapi ../contracts/openapi.json
 ```
 
 CI regenerates it and fails if the committed copy has drifted, so the contract can never
-quietly disagree with the code. Once the frontend exists, its TypeScript types are generated
-from this same file, which makes a breaking API change a compile error in the browser.
+quietly disagree with the code. The frontend's TypeScript types are generated from this same
+file:
+
+```bash
+cd frontend && npm run api:types
+```
+
+CI checks those for drift too, which makes a breaking API change a compile error in the
+browser rather than a surprise at runtime.
 
 ## Contents
 

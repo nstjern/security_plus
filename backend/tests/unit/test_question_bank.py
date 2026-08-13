@@ -1,7 +1,4 @@
-"""Question bank loading, validation, and querying.
-
-Ported from the CLI's ``test_quiz.py`` so the web app inherits the same guarantees.
-"""
+"""Question bank loading, validation, and querying."""
 
 from __future__ import annotations
 

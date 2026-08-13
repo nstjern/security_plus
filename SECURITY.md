@@ -52,9 +52,25 @@ anything larger; moving the counters to Postgres or Redis is the upgrade path.
 non-cryptographic generator. Presentation order is a usability concern, not a secret: the
 answer key is never sent before the learner commits.
 
+## Browser client
+
+| Control | Status | SY0-701 domain |
+|---|---|---|
+| No credential in `localStorage` or `sessionStorage`; the session lives in an `HttpOnly` cookie | Implemented | 1.0 General Security Concepts |
+| CSRF token attached to every unsafe request, and only to unsafe requests | Implemented | 2.0 Threats and Mitigations |
+| Answers and explanations reach the browser only after an answer is submitted | Implemented | 3.0 Security Architecture |
+| Cached progress dropped when a learner signs out, so a shared machine leaks nothing | Implemented | 4.0 Security Operations |
+| Content-Security-Policy on the static site, allowing calls only to the configured API origin | Implemented | 3.0 Security Architecture |
+| React escapes interpolated content; no use of `dangerouslySetInnerHTML` | Implemented | 2.0 Threats and Mitigations |
+
+The frontend never decides whether an answer was right. It renders what the API graded, and
+the API is the only place the answer key exists.
+
 ## Response headers
 
-Set by `SecurityHeadersMiddleware` on every response:
+The static site is served by nginx with its own policy, which permits `connect-src` to the API
+origin and nothing else. The headers below are set by `SecurityHeadersMiddleware` on every API
+response:
 
 | Header | Value | Why |
 |---|---|---|
@@ -81,10 +97,10 @@ scripts from a CDN. No other route is exempt.
 
 | Control | Status |
 |---|---|
-| Runs as an unprivileged user (`appuser`, uid 999) | Implemented |
-| Multi-stage build; no compilers or build tooling in the runtime image | Implemented |
-| CI asserts the image does not run as root | Implemented |
-| `pip-audit` fails the build on known vulnerable dependencies | Implemented |
+| Both images run as an unprivileged user (`appuser` for the API, uid 101 for nginx) | Implemented |
+| Multi-stage builds; no compilers, Node runtime, or build tooling in either runtime image | Implemented |
+| CI asserts neither image runs as root | Implemented |
+| `pip-audit` and `npm audit` fail the build on known vulnerable dependencies | Implemented |
 | Dependencies pinned to compatible ranges | Implemented |
 | Container image scanning (Trivy) | Planned |
 | Static analysis (CodeQL) and secret scanning (Gitleaks) | Planned |

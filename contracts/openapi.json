@@ -918,9 +918,39 @@
     "/api/auth/logout": {
       "post": {
         "operationId": "logout_api_auth_logout_post",
+        "parameters": [
+          {
+            "description": "Echo the value of the sp_csrf cookie.",
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Echo the value of the sp_csrf cookie.",
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Sign out and revoke the session",
@@ -1343,6 +1373,26 @@
       },
       "post": {
         "operationId": "create_session_api_sessions_post",
+        "parameters": [
+          {
+            "description": "Echo the value of the sp_csrf cookie.",
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Echo the value of the sp_csrf cookie.",
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1436,6 +1486,24 @@
               "format": "uuid",
               "title": "Session Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Echo the value of the sp_csrf cookie.",
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Echo the value of the sp_csrf cookie.",
+              "title": "X-Csrf-Token"
             }
           }
         ],
@@ -1532,6 +1600,24 @@
               "format": "uuid",
               "title": "Session Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Echo the value of the sp_csrf cookie.",
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Echo the value of the sp_csrf cookie.",
+              "title": "X-Csrf-Token"
             }
           }
         ],

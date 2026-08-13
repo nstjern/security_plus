@@ -1,7 +1,7 @@
 """Aggregation and weak-area ranking.
 
-Ported from the CLI's ``group_results`` and ``calculate_weak_areas`` so the web app and the
-terminal program rank weaknesses identically.
+A weak area is scored by both how often a question was missed and the rate at which it was
+missed, so a subject answered wrong twice out of two ranks above one missed twice out of ten.
 """
 
 from __future__ import annotations

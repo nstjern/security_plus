@@ -1,0 +1,5 @@
+dist
+coverage
+node_modules
+# Regenerated from the API contract; formatting it would create noise on every regeneration.
+src/api/schema.d.ts

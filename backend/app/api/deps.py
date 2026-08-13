@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from sqlmodel import Session
 
 from app.core.config import Settings, get_settings
@@ -15,8 +15,6 @@ from app.db.tables import AuthSession, User
 from app.repositories import auth_sessions as auth_session_repository
 from app.repositories import users as user_repository
 from app.services.question_bank import QuestionBank
-
-CSRF_HEADER = "X-CSRF-Token"
 
 NOT_AUTHENTICATED = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,12 +72,18 @@ def get_current_user(context: Annotated[AuthContext, Depends(get_auth_context)])
 
 
 def require_csrf(
-    request: Request,
     context: Annotated[AuthContext, Depends(get_auth_context)],
+    x_csrf_token: Annotated[
+        str | None,
+        Header(description="Echo the value of the sp_csrf cookie."),
+    ] = None,
 ) -> AuthContext:
-    """Verify the double-submit token on state-changing requests."""
-    submitted = request.headers.get(CSRF_HEADER, "")
-    if not submitted or not tokens_match(submitted, context.auth_session.csrf_token):
+    """Verify the double-submit token on state-changing requests.
+
+    Declared as a header parameter rather than read off the raw request so the requirement
+    appears in the OpenAPI document, where generated clients and the docs UI can see it.
+    """
+    if not x_csrf_token or not tokens_match(x_csrf_token, context.auth_session.csrf_token):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Missing or invalid CSRF token",

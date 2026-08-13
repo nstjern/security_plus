@@ -1,81 +1,71 @@
-# Security+ Study Quiz
+# Security+ Study
 
-A Python 3 terminal quiz with 136 independently authored practice questions
-covering the five CompTIA Security+ SY0-701 exam domains.
+A full-stack study application for the CompTIA Security+ SY0-701 exam objectives, built
+around 136 independently authored practice questions. It grades answers server-side, tracks
+accuracy per domain and subject, and turns the questions a learner missed into a personalized
+review guide.
 
-This project is not affiliated with or endorsed by CompTIA. Its questions are
-original study material, not official exam items.
+This project is not affiliated with or endorsed by CompTIA. Its questions are original study
+material, not official exam items.
 
-The project is being rebuilt as a full-stack web application. The terminal
-program below still works and is unchanged; the API in `backend/` reuses its
-domain logic so both rank weaknesses identically.
+## Run it
+
+With Docker installed:
+
+```bash
+docker compose up --build
+docker compose exec api alembic upgrade head
+```
+
+| What | Where |
+|---|---|
+| Study app | http://localhost:5173 |
+| API documentation | http://localhost:8000/docs |
+
+Create an account on first visit; progress is stored against it.
+
+## Layout
 
 | Path | What it is |
 |---|---|
-| `quiz.py`, `test_quiz.py` | The original terminal program |
-| `questions.json` | The question bank, shared by both interfaces |
+| `frontend/` | React and TypeScript interface — see [frontend/README.md](frontend/README.md) |
 | `backend/` | FastAPI service — see [backend/README.md](backend/README.md) |
-| `contracts/` | Generated API contract and architecture decision records |
-| `SECURITY.md` | Security controls, mapped to SY0-701 domains |
+| `questions.json` | The question bank, loaded and validated at API startup |
+| `contracts/` | The generated OpenAPI document and architecture decision records |
+| `SECURITY.md` | The security controls, mapped to SY0-701 domains |
 
-Start the web stack with `docker compose up --build`, then open
-http://localhost:8000/docs.
+## How it fits together
 
-## Run
+The browser talks to the API across origins with a session cookie, so the interesting parts of
+the exam material are also the parts holding the application up: `HttpOnly` cookies, CSRF
+tokens, CORS, password hashing, rate limiting, and authorization on every query.
 
-From this folder:
-
-```bash
-python3 quiz.py
-```
-
-Or from the project root:
-
-```bash
-python3 security_plus/quiz.py
-```
-
-The program uses only the Python standard library.
+`contracts/openapi.json` is the boundary between the two halves. The backend generates it, the
+frontend generates its TypeScript types from it, and CI fails if either drifts from what is
+committed.
 
 ## Study modes
 
-1. **Study all questions** presents all questions in a newly randomized order.
-2. **Select an exam domain** focuses on one SY0-701 domain.
-3. **Select a chapter or subject** focuses on a narrower topic.
-4. **Review previously missed questions** revisits anything answered incorrectly.
-5. **Take a practice quiz** draws a random sample of a chosen size.
-6. **View cumulative statistics** shows accuracy by domain and weakest subjects.
-7. **Generate a review guide** ranks weak areas and turns missed-question
-   explanations into a personalized concept review.
+Sessions can cover everything, a single exam domain, a chapter, a subject, an objective, a
+random practice quiz of a chosen size, or only the questions previously answered incorrectly.
+Answer choices can be shuffled so a remembered letter is not mistaken for a remembered
+concept. Every answer is graded by the API, which is also the only place the correct answer
+and its explanation exist.
 
-Every study mode can optionally randomize answer choices. Enter `S` to skip a
-question or `Q` to end the current session. Progress is saved after each
-question in `progress.json`, which is created on the first answered question.
+## Review guide
 
-## Personalized review guide
+Weak areas are ranked using both how many questions were missed and the rate at which they
+were missed, so two wrong out of two outranks two wrong out of ten. Each focus area carries
+the concept behind each missed question, its explanation, and the objective and chapter to go
+back to.
 
-Option 7 calculates a weakness score using both incorrect-answer count and
-error rate, then organizes missed concepts by exam domain and subject. The
-guide includes the correct concept, its explanation, and a suggested
-focused-study subject.
+## Development
 
-The guide can be read one topic at a time in the terminal, saved to
-`review_guide.txt`, or both. Running option 7 again regenerates the guide from
-the latest progress.
-
-## Question bank
-
-Each question includes its exam domain, objective, chapter, subject, answer,
-explanation, and an explicit original-content provenance statement. Chapters
-1–17 and all five domains can be selected directly from the study menus.
-
-## Reset progress
-
-To start over, exit the program and delete `progress.json`. The clean
-question bank in `questions.json` is not modified by studying.
-
-## Test
+Both halves are checked the same way in CI: linting, formatting, type checking, tests with
+coverage thresholds, a container build that must run as a non-root user, and drift checks on
+the API contract and the database migrations.
 
 ```bash
-python3 -m unittest -v test_quiz.py
+cd backend && pytest && ruff check . && mypy app
+cd frontend && npm test && npm run lint && npm run typecheck
 ```

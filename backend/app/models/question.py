@@ -1,7 +1,7 @@
 """The question bank's domain model.
 
-Validation that ``quiz.py`` performed with hand-written checks is expressed here as
-Pydantic constraints, so a malformed bank fails at load time with a precise message.
+Validation is expressed as Pydantic constraints, so a malformed bank fails at load time with
+a precise message rather than surfacing as a confusing error mid-session.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ class Question(BaseModel):
     answer: str
     explanation: str
     provenance: str
-    # Optional so user-authored additions can omit them, matching the CLI's tolerance.
+    # Optional so hand-authored additions to the bank can leave them out.
     exam_domain: str = ""
     corrected: bool = False
     correction_note: str = ""

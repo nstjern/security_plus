@@ -1,7 +1,13 @@
-# Personal study data and generated guides
+# Study data left behind by the retired terminal program
 progress.json
 review_guide.txt
 ai_review_cache.json
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
 
 # Secrets and local environments
 .env
@@ -11,6 +17,8 @@ ai_review_cache.json
 __pycache__/
 *.py[cod]
 .DS_Store
+.specstory/
+.cursorindexingignore
 
 # Tooling caches and coverage output
 .pytest_cache/

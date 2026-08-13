@@ -1,7 +1,7 @@
 """Structured review-guide models.
 
-The CLI rendered the guide directly to strings. Returning structured data instead lets the
-API, a future export format, and a later tutor layer share one representation.
+The guide is data rather than rendered text, so the API, a future export format, and a later
+tutor layer can share one representation.
 """
 
 from __future__ import annotations

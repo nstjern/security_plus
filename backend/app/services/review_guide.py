@@ -1,7 +1,7 @@
 """Building the personalized review guide.
 
-Ranking matches the CLI. What changed is the output: structured models instead of rendered
-text, plus the objective and chapter labels the CLI had available but never surfaced.
+Missed questions are grouped by subject, ranked by weakness score, and turned into concepts
+carrying the explanation, objective, and chapter a learner needs to study the topic again.
 """
 
 from __future__ import annotations

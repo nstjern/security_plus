@@ -1,7 +1,11 @@
-# Production-shaped stack: the API image runs the installed package, no source mount.
-# Development conveniences live in compose.override.yml, which Compose merges automatically.
+# Production-shaped stack: the API image runs the installed package and the web image serves
+# a static build behind nginx. Development conveniences live in compose.override.yml, which
+# Compose merges automatically.
 #
-#   docker compose up --build
+#   docker compose up --build      # http://localhost:5173, API on http://localhost:8000
+#
+# For frontend work with hot reload, run `docker compose up db api` and `npm run dev` in
+# frontend/ instead, so the dev server owns port 5173.
 
 name: security-plus
 
@@ -24,6 +28,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: frontend
+      args:
+        # Baked into the bundle at build time; it must match how the browser reaches the API.
+        VITE_API_URL: http://localhost:8000
+    environment:
+      # Widens the container's Content-Security-Policy to allow calls to that same origin.
+      API_ORIGIN: http://localhost:8000
+    ports:
+      - "5173:8080"
+    depends_on:
+      - api
 
   db:
     image: postgres:16-alpine

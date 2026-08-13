@@ -14,14 +14,14 @@ class AttemptResult(StrEnum):
 
 
 class ProgressRecord(BaseModel):
-    """Per-question totals, mirroring the CLI's ``progress.json`` entries."""
+    """Per-question totals accumulated across every session."""
 
     attempts: int = 0
     correct: int = 0
     incorrect: int = 0
     skipped: int = 0
     last_result: AttemptResult | None = None
-    # Recording the chosen answer enables "you picked X" feedback that the CLI cannot give.
+    # Kept so feedback can name the distractor that was chosen, not just the right answer.
     last_answer: str | None = None
 
     @property

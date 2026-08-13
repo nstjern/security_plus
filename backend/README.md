@@ -1,8 +1,7 @@
 # Security+ Study API
 
-FastAPI service behind the Security+ study application. The domain logic — question bank
-validation, weak-area ranking, review guide construction — is ported from the original
-terminal program (`../quiz.py`), so both interfaces rank weaknesses identically.
+FastAPI service behind the Security+ study application. It owns the question bank, grades
+answers, tracks progress per learner, and builds the personalized review guide.
 
 ## Run it
 
@@ -92,7 +91,7 @@ app/
   api/               Routes, schemas, dependencies, cookie handling
   export_openapi.py  Writes contracts/openapi.json
 alembic/             Migrations
-tests/unit/          Domain logic, ported from ../test_quiz.py
+tests/unit/          Domain logic, services, and repositories
 tests/api/           HTTP behaviour, including auth and response hardening
 ```
 
