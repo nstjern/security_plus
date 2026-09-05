@@ -1,0 +1,61 @@
+# Production-shaped stack: the API image runs the installed package and the web image serves
+# a static build behind nginx. Development conveniences live in compose.override.yml, which
+# Compose merges automatically.
+#
+#   docker compose up --build      # http://localhost:5173, API on http://localhost:8000
+#
+# For frontend work with hot reload, run `docker compose up db api` and `npm run dev` in
+# frontend/ instead, so the dev server owns port 5173.
+
+name: security-plus
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://app:app@db:5432/app
+      CORS_ORIGINS: '["http://localhost:5173"]'
+      LOG_LEVEL: INFO
+    env_file:
+      # Optional local overrides; gitignored. See .env.example.
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: frontend
+      args:
+        # Baked into the bundle at build time; it must match how the browser reaches the API.
+        VITE_API_URL: http://localhost:8000
+    environment:
+      # Widens the container's Content-Security-Policy to allow calls to that same origin.
+      API_ORIGIN: http://localhost:8000
+    ports:
+      - "5173:8080"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+volumes:
+  pgdata:

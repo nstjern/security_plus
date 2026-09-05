@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand-50: oklch(0.97 0.02 220);
+  --color-brand-300: oklch(0.82 0.11 220);
+  --color-brand-400: oklch(0.75 0.14 220);
+  --color-brand-500: oklch(0.66 0.16 220);
+  --color-brand-600: oklch(0.56 0.15 220);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+  }
+
+  /* Visible keyboard focus everywhere, rather than only where a component remembers to add it. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-400;
+  }
+}

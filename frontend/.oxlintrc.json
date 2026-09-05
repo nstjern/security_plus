@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn"
+  },
+  "plugins": ["react", "typescript", "unicorn", "jsx-a11y"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-console": "error",
+    "typescript/no-explicit-any": "error",
+    /* The automatic JSX runtime means React does not need to be in scope. */
+    "react/react-in-jsx-scope": "off"
+  },
+  "ignorePatterns": ["dist", "coverage", "src/api/schema.d.ts"]
+}
