@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { describeError } from '../api/errors'
 import { useCatalog, useCreateSession, useMissedQuestions } from '../api/hooks'
-import type { StudyMode } from '../api/types'
+import type { MissedScope, StudyMode } from '../api/types'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
 import { Card, CardHeading } from '../components/Card'
@@ -53,7 +53,7 @@ const MODES: ModeOption[] = [
   {
     value: 'missed',
     label: 'Questions you missed',
-    description: 'Revisit everything you have answered incorrectly',
+    description: 'Revisit questions you have answered incorrectly',
   },
 ]
 
@@ -72,6 +72,7 @@ export function StartSessionPage() {
   // Held as text so clearing the field leaves it empty instead of snapping to zero.
   const [count, setCount] = useState('20')
   const [shuffleAnswers, setShuffleAnswers] = useState(true)
+  const [missedScope, setMissedScope] = useState<MissedScope>('all')
 
   const catalog = useCatalog()
   const missed = useMissedQuestions()
@@ -90,6 +91,7 @@ export function StartSessionPage() {
       {
         mode,
         filter_value: selected?.source ? filterValue : null,
+        missed_scope: mode === 'missed' ? missedScope : 'all',
         count: mode === 'practice' && requestedCount > 0 ? requestedCount : null,
         shuffle_answers: shuffleAnswers,
         shuffle_questions: true,
@@ -117,7 +119,7 @@ export function StartSessionPage() {
             <fieldset className="space-y-2">
               <legend className="sr-only">Study mode</legend>
               {MODES.map((option) => {
-                const unavailable = option.value === 'missed' && missed.data?.count === 0
+                const unavailable = option.value === 'missed' && missed.data?.all.count === 0
                 return (
                   // The rule only recognises literal label text; this one comes from MODES.
                   // oxlint-disable-next-line jsx-a11y/label-has-associated-control
@@ -140,6 +142,9 @@ export function StartSessionPage() {
                       onChange={() => {
                         setMode(option.value)
                         setFilterValue('')
+                        if (option.value === 'missed') {
+                          setMissedScope('all')
+                        }
                       }}
                       className="mt-1"
                     />
@@ -174,6 +179,63 @@ export function StartSessionPage() {
                     </option>
                   ))}
                 </SelectField>
+              ) : null}
+
+              {mode === 'missed' && missed.data ? (
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium text-slate-200">
+                    Which missed questions?
+                  </legend>
+                  {(
+                    [
+                      {
+                        value: 'all' as const,
+                        label: 'All questions you have ever missed',
+                        count: missed.data.all.count,
+                      },
+                      {
+                        value: 'unresolved' as const,
+                        label: 'Only questions not yet answered correctly',
+                        count: missed.data.unresolved.count,
+                      },
+                    ] as const
+                  ).map((option) => {
+                    const unavailable = option.count === 0
+                    return (
+                      // oxlint-disable-next-line jsx-a11y/label-has-associated-control
+                      <label
+                        key={option.value}
+                        htmlFor={`missed-scope-${option.value}`}
+                        className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                          missedScope === option.value
+                            ? 'border-brand-500 bg-slate-900'
+                            : 'border-slate-800 hover:border-slate-700'
+                        } ${unavailable ? 'opacity-50' : ''}`}
+                      >
+                        <input
+                          id={`missed-scope-${option.value}`}
+                          type="radio"
+                          name="missed-scope"
+                          value={option.value}
+                          checked={missedScope === option.value}
+                          disabled={unavailable}
+                          onChange={() => setMissedScope(option.value)}
+                          className="mt-1"
+                        />
+                        <span>
+                          <span className="block text-sm font-medium text-slate-100">
+                            {option.label}
+                          </span>
+                          <span className="block text-xs text-slate-400">
+                            {unavailable
+                              ? 'Nothing in this group right now'
+                              : `${option.count} question${option.count === 1 ? '' : 's'}`}
+                          </span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </fieldset>
               ) : null}
 
               {mode === 'practice' ? (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { useCurrentQuestion, useEndSession, useSession, useSubmitAnswer } from '../api/hooks'
@@ -52,9 +52,12 @@ function AnswerFeedback({ answer, chosen, onNext }: AnswerFeedbackProps) {
         ) : null}
       </Card>
 
-      <Button onClick={onNext}>
-        {answer.next_available ? 'Next question' : 'See your results'}
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={onNext}>
+          {answer.next_available ? 'Next question' : 'See your results'}
+        </Button>
+        <span className="text-xs text-slate-500">or press Enter</span>
+      </div>
     </div>
   )
 }
@@ -71,6 +74,82 @@ export function SessionPage() {
   const submitAnswer = useSubmitAnswer(sessionId)
   const endSession = useEndSession(sessionId)
 
+  // Pulled out because these two keep the same identity across renders while the objects
+  // holding them do not, which is what lets the handlers below stay memoized.
+  const { mutate: submit } = submitAnswer
+  const { refetch: refetchQuestion } = question
+
+  // Both are memoized because the keyboard listener below depends on them, and a fresh
+  // function on every render would tear the listener down and rebuild it just as often.
+  const handleSubmit = useCallback(() => {
+    submit(chosen, { onSuccess: setAnswer })
+  }, [chosen, submit])
+
+  const handleNext = useCallback(() => {
+    const wasLast = answer?.next_available === false
+    setAnswer(null)
+    setChosen(null)
+    if (wasLast) {
+      void navigate(`/sessions/${sessionId}/summary`)
+    } else {
+      void refetchQuestion()
+    }
+  }, [answer, navigate, sessionId, refetchQuestion])
+
+  // Lowercase a–d pick a choice, Enter submits, Enter again moves on. Bound to the window so
+  // the shortcuts work without tabbing into the question first.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      // A held key would race through several questions, and a browser or system shortcut is
+      // never ours to intercept.
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) {
+        return
+      }
+
+      const insideButtonOrLink =
+        event.target instanceof HTMLElement && event.target.closest('a, button') !== null
+
+      if (answer !== null) {
+        if (event.key === 'Enter') {
+          // A focused button already acts on Enter; handling it here as well would advance
+          // twice.
+          if (insideButtonOrLink) {
+            return
+          }
+          event.preventDefault()
+          handleNext()
+        }
+        return
+      }
+
+      if (event.key === 'Enter') {
+        if (insideButtonOrLink) {
+          return
+        }
+        // Mirrors the submit button, which stays disabled until a choice exists.
+        if (chosen !== null && !submitAnswer.isPending) {
+          event.preventDefault()
+          handleSubmit()
+        }
+        return
+      }
+
+      // Only bare lowercase letters; Shift+A and Caps Lock are ignored on purpose.
+      if (event.shiftKey) {
+        return
+      }
+
+      const choices = question.data?.question.choices
+      if (isChoiceLetter(event.key) && choices && event.key in choices) {
+        event.preventDefault()
+        setChosen(event.key)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [answer, chosen, question.data, submitAnswer.isPending, handleNext, handleSubmit])
+
   if (session.isPending || question.isPending) {
     return <Loading label="Loading your session" />
   }
@@ -86,21 +165,6 @@ export function SessionPage() {
   // The API reports a finished session by refusing to serve another question.
   if (question.data === null && answer === null) {
     return <Navigate to={`/sessions/${sessionId}/summary`} replace />
-  }
-
-  function handleSubmit() {
-    submitAnswer.mutate(chosen, { onSuccess: setAnswer })
-  }
-
-  function handleNext() {
-    const wasLast = answer?.next_available === false
-    setAnswer(null)
-    setChosen(null)
-    if (wasLast) {
-      void navigate(`/sessions/${sessionId}/summary`)
-    } else {
-      void question.refetch()
-    }
   }
 
   const current = question.data
@@ -184,7 +248,7 @@ export function SessionPage() {
       {answer ? (
         <AnswerFeedback answer={answer} chosen={chosen} onNext={handleNext} />
       ) : (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button onClick={handleSubmit} disabled={chosen === null || submitAnswer.isPending}>
             Submit answer
           </Button>
@@ -198,6 +262,7 @@ export function SessionPage() {
           >
             Skip
           </Button>
+          <span className="text-xs text-slate-500">or press a–d, then Enter</span>
         </div>
       )}
     </div>

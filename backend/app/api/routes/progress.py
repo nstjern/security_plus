@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 
 from app.api.deps import Bank, CurrentUser, DbSession, require_user_id
-from app.api.schemas import GroupStatsResponse, MissedQuestionsResponse, ProgressSummaryResponse
+from app.api.schemas import GroupStatsResponse, MissedQuestionSet, MissedQuestionsResponse, ProgressSummaryResponse
 from app.repositories import progress as progress_repository
 from app.services.statistics import group_results, lowest_performing_subjects
 
@@ -53,5 +53,10 @@ def read_weakest_subjects(
     summary="Questions answered incorrectly at least once",
 )
 def read_missed_questions(user: CurrentUser, db: DbSession) -> MissedQuestionsResponse:
-    question_ids = progress_repository.missed_question_ids(db, require_user_id(user))
-    return MissedQuestionsResponse(count=len(question_ids), question_ids=question_ids)
+    user_id = require_user_id(user)
+    all_ids = progress_repository.missed_question_ids(db, user_id)
+    unresolved_ids = progress_repository.missed_question_ids(db, user_id, unresolved_only=True)
+    return MissedQuestionsResponse(
+        all=MissedQuestionSet(count=len(all_ids), question_ids=all_ids),
+        unresolved=MissedQuestionSet(count=len(unresolved_ids), question_ids=unresolved_ids),
+    )

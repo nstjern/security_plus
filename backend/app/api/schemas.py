@@ -10,6 +10,8 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 from app.core.clock import ensure_utc
@@ -21,6 +23,11 @@ from app.services.study_session import StudyMode
 # Minimum length is the control that matters most for passphrases; complexity rules push
 # users toward predictable substitutions. See SECURITY.md.
 MINIMUM_PASSWORD_LENGTH = 12
+
+
+class MissedScope(StrEnum):
+    all = "all"
+    unresolved = "unresolved"
 
 
 class HealthResponse(BaseModel):
@@ -104,6 +111,7 @@ class SessionCreateRequest(BaseModel):
     mode: StudyMode
     # The value the mode filters on: a domain, chapter, subject, or objective name.
     filter_value: str | None = Field(default=None, max_length=200)
+    missed_scope: MissedScope = MissedScope.all
     count: int | None = Field(default=None, ge=1, le=200)
     shuffle_answers: bool = False
     shuffle_questions: bool = True
@@ -202,6 +210,11 @@ class ProgressSummaryResponse(BaseModel):
     domains: list[GroupStatsResponse]
 
 
-class MissedQuestionsResponse(BaseModel):
+class MissedQuestionSet(BaseModel):
     count: int
     question_ids: list[str]
+
+
+class MissedQuestionsResponse(BaseModel):
+    all: MissedQuestionSet
+    unresolved: MissedQuestionSet

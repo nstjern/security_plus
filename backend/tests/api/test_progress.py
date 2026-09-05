@@ -45,7 +45,10 @@ def test_a_new_learner_has_an_empty_summary(signed_in: TestClient) -> None:
 
 
 def test_a_new_learner_has_missed_nothing(signed_in: TestClient) -> None:
-    assert signed_in.get("/api/progress/missed").json() == {"count": 0, "question_ids": []}
+    assert signed_in.get("/api/progress/missed").json() == {
+        "all": {"count": 0, "question_ids": []},
+        "unresolved": {"count": 0, "question_ids": []},
+    }
 
 
 def test_a_new_learners_review_guide_is_empty(signed_in: TestClient) -> None:
@@ -87,8 +90,8 @@ def test_a_missed_question_appears_in_the_missed_list(
 ) -> None:
     answer_until_incorrect(signed_in, csrf)
     missed = signed_in.get("/api/progress/missed").json()
-    assert missed["count"] >= 1
-    assert all(question_id.startswith("clean-") for question_id in missed["question_ids"])
+    assert missed["all"]["count"] >= 1
+    assert all(question_id.startswith("clean-") for question_id in missed["all"]["question_ids"])
 
 
 def test_weakest_subjects_are_reported(signed_in: TestClient, csrf: dict[str, str]) -> None:
@@ -132,7 +135,22 @@ def test_a_missed_question_session_revisits_those_questions(
 
     created = signed_in.post("/api/sessions", json={"mode": "missed"}, headers=csrf)
     assert created.status_code == 201
-    assert created.json()["total_questions"] == missed["count"]
+    assert created.json()["total_questions"] == missed["all"]["count"]
+
+
+def test_a_missed_question_session_can_target_only_unresolved_questions(
+    signed_in: TestClient, csrf: dict[str, str]
+) -> None:
+    answer_until_incorrect(signed_in, csrf)
+    missed = signed_in.get("/api/progress/missed").json()
+
+    created = signed_in.post(
+        "/api/sessions",
+        json={"mode": "missed", "missed_scope": "unresolved"},
+        headers=csrf,
+    )
+    assert created.status_code == 201
+    assert created.json()["total_questions"] == missed["unresolved"]["count"]
 
 
 def test_progress_is_private_to_each_learner(signed_in: TestClient, csrf: dict[str, str]) -> None:

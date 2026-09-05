@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/study', label: 'Study' },
   { to: '/review-guide', label: 'Review guide' },
-  { to: '/questions', label: 'Browse' },
 ]
 
 function navLinkClasses({ isActive }: { isActive: boolean }): string {

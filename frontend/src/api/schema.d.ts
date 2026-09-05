@@ -458,13 +458,23 @@ export interface components {
             /** Username */
             username: string;
         };
-        /** MissedQuestionsResponse */
-        MissedQuestionsResponse: {
+        /** MissedQuestionSet */
+        MissedQuestionSet: {
             /** Count */
             count: number;
             /** Question Ids */
             question_ids: string[];
         };
+        /** MissedQuestionsResponse */
+        MissedQuestionsResponse: {
+            all: components["schemas"]["MissedQuestionSet"];
+            unresolved: components["schemas"]["MissedQuestionSet"];
+        };
+        /**
+         * MissedScope
+         * @enum {string}
+         */
+        MissedScope: "all" | "unresolved";
         /** ProgressSummaryResponse */
         ProgressSummaryResponse: {
             /** Accuracy */
@@ -575,6 +585,8 @@ export interface components {
             count?: number | null;
             /** Filter Value */
             filter_value?: string | null;
+            /** @default all */
+            missed_scope: components["schemas"]["MissedScope"];
             mode: components["schemas"]["StudyMode"];
             /**
              * Shuffle Answers

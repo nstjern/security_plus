@@ -11,7 +11,6 @@ import type {
   ChoiceLetter,
   MissedQuestions,
   ProgressSummary,
-  QuestionPage,
   ReviewGuide,
   SessionCreateRequest,
   SessionQuestion,
@@ -86,22 +85,6 @@ export function useCatalog(): UseQueryResult<Catalog> {
     queryKey: queryKeys.catalog,
     queryFn: async () => unwrap(await api.GET('/api/catalog')),
     staleTime: Infinity,
-  })
-}
-
-export interface QuestionFilters {
-  domain?: string | undefined
-  chapter?: string | undefined
-  subject?: string | undefined
-  objective?: string | undefined
-  limit?: number | undefined
-  offset?: number | undefined
-}
-
-export function useQuestions(filters: QuestionFilters): UseQueryResult<QuestionPage> {
-  return useQuery({
-    queryKey: queryKeys.questions(filters),
-    queryFn: async () => unwrap(await api.GET('/api/questions', { params: { query: filters } })),
   })
 }
 

@@ -68,10 +68,12 @@ def record_attempt(
     return _to_record(row)
 
 
-def missed_question_ids(db: Session, user_id: int) -> list[str]:
-    statement = (
-        select(QuestionProgress.question_id)
-        .where(QuestionProgress.user_id == user_id, col(QuestionProgress.incorrect) > 0)
-        .order_by(col(QuestionProgress.incorrect).desc())
+def missed_question_ids(db: Session, user_id: int, *, unresolved_only: bool = False) -> list[str]:
+    statement = select(QuestionProgress.question_id).where(
+        QuestionProgress.user_id == user_id,
+        col(QuestionProgress.incorrect) > 0,
     )
+    if unresolved_only:
+        statement = statement.where(col(QuestionProgress.correct) == 0)
+    statement = statement.order_by(col(QuestionProgress.incorrect).desc())
     return list(db.exec(statement).all())

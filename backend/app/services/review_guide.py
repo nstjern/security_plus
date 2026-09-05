@@ -2,6 +2,8 @@
 
 Missed questions are grouped by subject, ranked by weakness score, and turned into concepts
 carrying the explanation, objective, and chapter a learner needs to study the topic again.
+Focus areas and priority domains are listed in exam domain order so the guide reads
+Domain 1 through Domain 5.
 """
 
 from __future__ import annotations
@@ -9,22 +11,32 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import UTC, datetime
 
-from app.models.progress import ProgressRecord
+from app.core.constants import DOMAIN_NAMES
+from app.models.progress import GroupStats, ProgressRecord
 from app.models.review import DomainPriority, FocusArea, ReviewConcept, ReviewGuide
 from app.services.question_bank import QuestionBank
 from app.services.statistics import calculate_weak_areas, group_results
+
+
+def _domain_sort_key(domain: str) -> tuple[int, str]:
+    """Order domains Domain 1 → Domain 5, with anything unmapped at the end."""
+    try:
+        return (DOMAIN_NAMES.index(domain), domain)
+    except ValueError:
+        return (len(DOMAIN_NAMES), domain)
 
 
 def _priority_domains(
     bank: QuestionBank,
     records: Mapping[str, ProgressRecord],
 ) -> list[DomainPriority]:
-    scored = []
+    entries: list[tuple[GroupStats, float]] = []
     for stats in group_results(bank, records, field="domain").values():
         if not stats.graded or not stats.incorrect:
             continue
-        scored.append((stats.incorrect * stats.error_rate, stats))
-    scored.sort(key=lambda item: (-item[0], item[1].name))
+        entries.append((stats, stats.incorrect * stats.error_rate))
+
+    entries.sort(key=lambda item: _domain_sort_key(item[0].name))
 
     return [
         DomainPriority(
@@ -34,7 +46,7 @@ def _priority_domains(
             incorrect=stats.incorrect,
             weakness_score=score,
         )
-        for rank, (score, stats) in enumerate(scored, start=1)
+        for rank, (stats, score) in enumerate(entries, start=1)
     ]
 
 
@@ -75,6 +87,8 @@ def build_review_guide(
     weak_areas = calculate_weak_areas(bank, records)
     if max_focus_areas is not None:
         weak_areas = weak_areas[:max_focus_areas]
+
+    weak_areas.sort(key=lambda area: (_domain_sort_key(area.domain), area.subject))
 
     domain_stats = group_results(bank, records, field="domain").values()
     total_correct = sum(stats.correct for stats in domain_stats)

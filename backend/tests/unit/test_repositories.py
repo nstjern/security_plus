@@ -120,10 +120,20 @@ def test_missed_questions_are_ordered_by_how_often_they_were_missed(
         db, user_id=user_id, question_id="once", result=AttemptResult.incorrect
     )
     progress_repository.record_attempt(
+        db, user_id=user_id, question_id="fixed", result=AttemptResult.incorrect
+    )
+    progress_repository.record_attempt(
+        db, user_id=user_id, question_id="fixed", result=AttemptResult.correct
+    )
+    progress_repository.record_attempt(
         db, user_id=user_id, question_id="never", result=AttemptResult.correct
     )
 
-    assert progress_repository.missed_question_ids(db, user_id) == ["often", "once"]
+    assert progress_repository.missed_question_ids(db, user_id) == ["often", "once", "fixed"]
+    assert progress_repository.missed_question_ids(db, user_id, unresolved_only=True) == [
+        "often",
+        "once",
+    ]
 
 
 def test_progress_is_scoped_to_one_learner(db: Session, user_id: int) -> None:

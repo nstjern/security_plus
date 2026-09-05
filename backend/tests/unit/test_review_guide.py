@@ -13,6 +13,7 @@ def make_question(
     question_id: str,
     *,
     subject: str,
+    exam_domain: str = DOMAIN_NAMES[0],
     correct_choice: str = "Alpha",
     explanation: str = "Because alpha.",
     corrected: bool = False,
@@ -20,8 +21,8 @@ def make_question(
     return Question(
         id=question_id,
         source_section="Domain Bank",
-        grouping=DOMAIN_NAMES[0],
-        exam_domain=DOMAIN_NAMES[0],
+        grouping=exam_domain,
+        exam_domain=exam_domain,
         objective="1.1 Security controls",
         subject=subject,
         question_number=1,
@@ -68,14 +69,13 @@ def test_guide_surfaces_the_original_explanation_objective_and_chapter(
     assert concept.correction_note is None
 
 
-def test_priority_domains_are_ranked_by_weakness_score(
+def test_priority_domains_are_listed_in_domain_order(
     bank: QuestionBank, records: dict[str, ProgressRecord]
 ) -> None:
     guide = build_review_guide(bank, records)
-    assert guide.priority_domains[0].rank == 1
+    indices = [DOMAIN_NAMES.index(domain.domain) for domain in guide.priority_domains]
+    assert indices == sorted(indices)
     assert guide.priority_domains[0].domain == DOMAIN_NAMES[0]
-    scores = [domain.weakness_score for domain in guide.priority_domains]
-    assert scores == sorted(scores, reverse=True)
 
 
 def test_domains_answered_perfectly_are_not_prioritized(
@@ -132,6 +132,24 @@ def test_focus_areas_can_be_capped(bank: QuestionBank, records: dict[str, Progre
     guide = build_review_guide(bank, records, max_focus_areas=1)
     assert len(guide.focus_areas) == 1
     assert guide.focus_areas[0].rank == 1
+
+
+def test_focus_areas_are_listed_in_domain_order() -> None:
+    synthetic = QuestionBank(
+        [
+            make_question("d4-q", subject="Ops topic", exam_domain=DOMAIN_NAMES[3]),
+            make_question("d1-q", subject="General topic", exam_domain=DOMAIN_NAMES[0]),
+        ]
+    )
+    missed = {
+        # Domain 4 misses more often, but the guide should still list Domain 1 first.
+        "d4-q": ProgressRecord(attempts=3, incorrect=3),
+        "d1-q": ProgressRecord(attempts=1, incorrect=1),
+    }
+    guide = build_review_guide(synthetic, missed)
+
+    assert [area.domain for area in guide.focus_areas] == [DOMAIN_NAMES[0], DOMAIN_NAMES[3]]
+    assert [area.rank for area in guide.focus_areas] == [1, 2]
 
 
 def test_records_for_unknown_questions_are_ignored() -> None:

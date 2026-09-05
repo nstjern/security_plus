@@ -97,12 +97,46 @@ describe('starting a session', () => {
   it('preselects the mode named in the address', async () => {
     server.use(
       http.get(url('/api/progress/missed'), () =>
-        HttpResponse.json({ count: 4, question_ids: ['a', 'b', 'c', 'd'] }),
+        HttpResponse.json({
+          all: { count: 4, question_ids: ['a', 'b', 'c', 'd'] },
+          unresolved: { count: 2, question_ids: ['a', 'b'] },
+        }),
       ),
     )
     renderApp('/study?mode=missed')
 
     expect(await screen.findByRole('radio', { name: /questions you missed/i })).toBeChecked()
+  })
+
+  it('lets the learner choose which missed questions to revisit', async () => {
+    let body: { mode?: string; missed_scope?: string } | null = null
+    server.use(
+      http.get(url('/api/progress/missed'), () =>
+        HttpResponse.json({
+          all: { count: 4, question_ids: ['a', 'b', 'c', 'd'] },
+          unresolved: { count: 2, question_ids: ['a', 'b'] },
+        }),
+      ),
+      http.post(url('/api/sessions'), async ({ request }) => {
+        body = (await request.json()) as { mode?: string; missed_scope?: string }
+        return HttpResponse.json(fixtures.studySession, { status: 201 })
+      }),
+      http.get(url('/api/sessions/:id'), () => HttpResponse.json(fixtures.studySession)),
+      http.get(url('/api/sessions/:id/current-question'), () =>
+        HttpResponse.json(fixtures.sessionQuestion),
+      ),
+    )
+    const { user } = renderApp('/study')
+
+    await user.click(await screen.findByRole('radio', { name: /questions you missed/i }))
+    await user.click(
+      screen.getByRole('radio', {
+        name: /only questions not yet answered correctly.*2 questions/i,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Begin' }))
+
+    expect(body).toMatchObject({ mode: 'missed', missed_scope: 'unresolved' })
   })
 
   it('disables revisiting missed questions when there are none', async () => {

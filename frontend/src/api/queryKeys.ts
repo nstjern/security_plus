@@ -3,7 +3,6 @@
 export const queryKeys = {
   currentUser: ['auth', 'me'] as const,
   catalog: ['catalog'] as const,
-  questions: (filters: object) => ['questions', filters] as const,
   sessions: ['sessions'] as const,
   session: (id: string) => ['sessions', id] as const,
   currentQuestion: (id: string) => ['sessions', id, 'current-question'] as const,

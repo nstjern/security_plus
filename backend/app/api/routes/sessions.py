@@ -10,6 +10,7 @@ from app.api.deps import Bank, CsrfProtected, CurrentUser, DbSession, require_us
 from app.api.schemas import (
     AnswerRequest,
     AnswerResponse,
+    MissedScope,
     QuestionSummary,
     SessionCreateRequest,
     SessionQuestionResponse,
@@ -64,7 +65,11 @@ def create_session(
     bank: Bank,
 ) -> StudySessionResponse:
     missed = (
-        progress_repository.missed_question_ids(db, context.user_id)
+        progress_repository.missed_question_ids(
+            db,
+            context.user_id,
+            unresolved_only=payload.missed_scope is MissedScope.unresolved,
+        )
         if payload.mode is StudyMode.missed
         else None
     )

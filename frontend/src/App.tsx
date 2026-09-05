@@ -3,7 +3,6 @@ import { Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireAuth } from './auth/RequireAuth'
 import { Layout } from './components/Layout'
-import { BrowsePage } from './pages/BrowsePage'
 import { DashboardPage } from './pages/DashboardPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ReviewGuidePage } from './pages/ReviewGuidePage'
@@ -19,7 +18,6 @@ const PROTECTED_ROUTES = [
   { path: '/sessions/:sessionId', element: <SessionPage /> },
   { path: '/sessions/:sessionId/summary', element: <SessionSummaryPage /> },
   { path: '/review-guide', element: <ReviewGuidePage /> },
-  { path: '/questions', element: <BrowsePage /> },
 ]
 
 export function App() {

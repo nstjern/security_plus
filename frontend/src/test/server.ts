@@ -12,7 +12,12 @@ export const defaultHandlers = [
   http.get(url('/api/catalog'), () => HttpResponse.json(fixtures.catalog)),
   http.get(url('/api/progress/summary'), () => HttpResponse.json(fixtures.emptyProgress)),
   http.get(url('/api/progress/subjects'), () => HttpResponse.json([])),
-  http.get(url('/api/progress/missed'), () => HttpResponse.json({ count: 0, question_ids: [] })),
+  http.get(url('/api/progress/missed'), () =>
+    HttpResponse.json({
+      all: { count: 0, question_ids: [] },
+      unresolved: { count: 0, question_ids: [] },
+    }),
+  ),
   http.get(url('/api/review-guide'), () => HttpResponse.json(fixtures.emptyReviewGuide)),
 ]
 

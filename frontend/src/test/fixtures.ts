@@ -64,6 +64,27 @@ export const progress: ProgressSummary = {
   ],
 }
 
+export const weakestSubjects = [
+  {
+    name: 'Privileged access management',
+    attempts: 3,
+    correct: 1,
+    incorrect: 2,
+    skipped: 0,
+    graded: 3,
+    accuracy: 1 / 3,
+  },
+  {
+    name: 'Password spraying',
+    attempts: 2,
+    correct: 1,
+    incorrect: 1,
+    skipped: 0,
+    graded: 2,
+    accuracy: 0.5,
+  },
+]
+
 export const studySession: StudySession = {
   id: SESSION_ID,
   mode: 'practice',

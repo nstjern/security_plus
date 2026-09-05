@@ -318,7 +318,7 @@
         "title": "LoginRequest",
         "type": "object"
       },
-      "MissedQuestionsResponse": {
+      "MissedQuestionSet": {
         "properties": {
           "count": {
             "title": "Count",
@@ -336,8 +336,32 @@
           "count",
           "question_ids"
         ],
+        "title": "MissedQuestionSet",
+        "type": "object"
+      },
+      "MissedQuestionsResponse": {
+        "properties": {
+          "all": {
+            "$ref": "#/components/schemas/MissedQuestionSet"
+          },
+          "unresolved": {
+            "$ref": "#/components/schemas/MissedQuestionSet"
+          }
+        },
+        "required": [
+          "all",
+          "unresolved"
+        ],
         "title": "MissedQuestionsResponse",
         "type": "object"
+      },
+      "MissedScope": {
+        "enum": [
+          "all",
+          "unresolved"
+        ],
+        "title": "MissedScope",
+        "type": "string"
       },
       "ProgressSummaryResponse": {
         "properties": {
@@ -630,6 +654,10 @@
               }
             ],
             "title": "Filter Value"
+          },
+          "missed_scope": {
+            "$ref": "#/components/schemas/MissedScope",
+            "default": "all"
           },
           "mode": {
             "$ref": "#/components/schemas/StudyMode"

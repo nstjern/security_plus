@@ -3,15 +3,19 @@ import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
 import * as fixtures from '../test/fixtures'
+import { reviewGuidePath } from '../reviewGuidePaths'
 import { renderApp } from '../test/render'
 import { server, url } from '../test/server'
 
 function withProgress() {
   server.use(
     http.get(url('/api/progress/summary'), () => HttpResponse.json(fixtures.progress)),
-    http.get(url('/api/progress/subjects'), () => HttpResponse.json(fixtures.progress.domains)),
+    http.get(url('/api/progress/subjects'), () => HttpResponse.json(fixtures.weakestSubjects)),
     http.get(url('/api/progress/missed'), () =>
-      HttpResponse.json({ count: 3, question_ids: ['clean-d04-q004'] }),
+      HttpResponse.json({
+        all: { count: 3, question_ids: ['clean-d04-q004'] },
+        unresolved: { count: 2, question_ids: ['clean-d04-q004'] },
+      }),
     ),
   )
 }
@@ -41,6 +45,29 @@ describe('the dashboard', () => {
     expect(await screen.findByText('Accuracy by domain')).toBeInTheDocument()
     expect(screen.getAllByText('Domain 4: Security Operations').length).toBeGreaterThan(0)
     expect(screen.getByText('9 graded, 1 skipped')).toBeInTheDocument()
+  })
+
+  it('links each domain to the filtered review guide', async () => {
+    withProgress()
+    renderApp('/')
+
+    const domainLink = await screen.findByRole('link', {
+      name: /Domain 4: Security Operations.*50%.*2\/4/i,
+    })
+    expect(domainLink).toHaveAttribute('href', reviewGuidePath('Domain 4: Security Operations'))
+  })
+
+  it('links each weak subject to the filtered review guide', async () => {
+    withProgress()
+    renderApp('/')
+
+    const subjectLink = await screen.findByRole('link', {
+      name: /Privileged access management.*33%.*1\/3/i,
+    })
+    expect(subjectLink).toHaveAttribute(
+      'href',
+      reviewGuidePath({ subject: 'Privileged access management' }),
+    )
   })
 
   it('offers a shortcut to practise missed questions', async () => {

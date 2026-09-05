@@ -5,6 +5,7 @@ import { AccuracyBar } from '../components/AccuracyBar'
 import { buttonClasses } from '../components/Button'
 import { Card, CardHeading } from '../components/Card'
 import { EmptyState, ErrorMessage, Loading } from '../components/Feedback'
+import { reviewGuidePath } from '../reviewGuidePaths'
 
 function percent(value: number): string {
   return `${Math.round(value * 100)}%`
@@ -77,12 +78,17 @@ export function DashboardPage() {
             />
             <div className="space-y-4">
               {domains.map((domain) => (
-                <AccuracyBar
+                <Link
                   key={domain.name}
-                  label={domain.name}
-                  accuracy={domain.accuracy}
-                  detail={`${domain.correct}/${domain.graded}`}
-                />
+                  to={reviewGuidePath(domain.name)}
+                  className="block rounded-lg px-2 py-2 transition-colors hover:bg-slate-800/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                >
+                  <AccuracyBar
+                    label={domain.name}
+                    accuracy={domain.accuracy}
+                    detail={`${domain.correct}/${domain.graded}`}
+                  />
+                </Link>
               ))}
             </div>
           </Card>
@@ -100,21 +106,26 @@ export function DashboardPage() {
             <ul className="space-y-4">
               {subjects.data?.map((subject) => (
                 <li key={subject.name}>
-                  <AccuracyBar
-                    label={subject.name}
-                    accuracy={subject.accuracy}
-                    detail={`${subject.correct}/${subject.graded}`}
-                  />
+                  <Link
+                    to={reviewGuidePath({ subject: subject.name })}
+                    className="block rounded-lg px-2 py-2 transition-colors hover:bg-slate-800/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                  >
+                    <AccuracyBar
+                      label={subject.name}
+                      accuracy={subject.accuracy}
+                      detail={`${subject.correct}/${subject.graded}`}
+                    />
+                  </Link>
                 </li>
               ))}
             </ul>
           </Card>
 
-          {missed.data && missed.data.count > 0 ? (
+          {missed.data && missed.data.all.count > 0 ? (
             <Card>
               <CardHeading
                 title="Questions you have missed"
-                description={`${missed.data.count} to revisit`}
+                description={`${missed.data.all.count} to revisit`}
                 action={
                   <Link
                     to="/study?mode=missed"

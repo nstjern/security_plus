@@ -114,6 +114,120 @@ describe('answering a question', () => {
   })
 })
 
+describe('answering from the keyboard', () => {
+  beforeEach(() => sessionHandlers())
+
+  it('picks a choice by its letter and submits on Enter', async () => {
+    server.use(
+      http.post(url('/api/sessions/:id/answer'), () => HttpResponse.json(fixtures.correctAnswer)),
+    )
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('b')
+    expect(screen.getByRole('radio', { name: /PAM system/i })).toBeChecked()
+
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByText('Correct')).toBeInTheDocument()
+  })
+
+  it('moves to the next question on a second Enter', async () => {
+    server.use(
+      http.post(url('/api/sessions/:id/answer'), () => HttpResponse.json(fixtures.correctAnswer)),
+    )
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('b{Enter}')
+    await screen.findByText('Correct')
+
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByRole('radio', { name: /PAM system/i })).not.toBeChecked()
+    expect(screen.queryByText(/why that is the answer/i)).not.toBeInTheDocument()
+  })
+
+  it('reaches the summary when Enter follows the last question', async () => {
+    server.use(
+      http.post(url('/api/sessions/:id/answer'), () =>
+        HttpResponse.json(fixtures.incorrectFinalAnswer),
+      ),
+    )
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('b{Enter}')
+    await screen.findByText('Not quite')
+
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByRole('heading', { name: 'Session complete' })).toBeInTheDocument()
+  })
+
+  it('ignores Enter until a choice is made', async () => {
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('{Enter}')
+
+    expect(screen.getByRole('button', { name: 'Submit answer' })).toBeDisabled()
+    expect(screen.queryByText(/why that is the answer/i)).not.toBeInTheDocument()
+  })
+
+  it('ignores letters that this question does not offer', async () => {
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('z')
+
+    expect(
+      screen.getAllByRole('radio').every((radio) => !(radio as HTMLInputElement).checked),
+    ).toBe(true)
+  })
+
+  it('ignores uppercase letters', async () => {
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    await user.keyboard('B')
+
+    expect(
+      screen.getAllByRole('radio').every((radio) => !(radio as HTMLInputElement).checked),
+    ).toBe(true)
+  })
+
+  it('selects a choice even when a button has focus', async () => {
+    const { user } = renderApp(SESSION_PATH)
+
+    await screen.findByText(/emergency database maintenance/i)
+    screen.getByRole('button', { name: 'End session' }).focus()
+    await user.keyboard('b')
+
+    expect(screen.getByRole('radio', { name: /PAM system/i })).toBeChecked()
+  })
+
+  it('submits once when Enter is pressed on the focused button', async () => {
+    let submissions = 0
+    server.use(
+      http.post(url('/api/sessions/:id/answer'), () => {
+        submissions += 1
+        return HttpResponse.json(fixtures.correctAnswer)
+      }),
+    )
+    const { user } = renderApp(SESSION_PATH)
+
+    await user.click(await screen.findByRole('radio', { name: /PAM system/i }))
+    // The button handles Enter natively, so the window listener has to stand down or the
+    // answer would be posted twice.
+    screen.getByRole('button', { name: 'Submit answer' }).focus()
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByText('Correct')).toBeInTheDocument()
+    expect(submissions).toBe(1)
+  })
+})
+
 describe('a session that is already over', () => {
   it('goes straight to the summary', async () => {
     sessionHandlers(
