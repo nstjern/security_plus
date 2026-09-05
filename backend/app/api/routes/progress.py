@@ -50,7 +50,7 @@ def read_weakest_subjects(
 @router.get(
     "/missed",
     response_model=MissedQuestionsResponse,
-    summary="Questions answered incorrectly at least once",
+    summary="Missed questions: all ever wrong, and those not yet answered correctly",
 )
 def read_missed_questions(user: CurrentUser, db: DbSession) -> MissedQuestionsResponse:
     user_id = require_user_id(user)

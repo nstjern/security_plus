@@ -1085,7 +1085,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Questions answered incorrectly at least once",
+        "summary": "Missed questions: all ever wrong, and those not yet answered correctly",
         "tags": [
           "progress"
         ]

@@ -76,7 +76,11 @@ path fails the build.
 ./.venv/bin/python -m app.export_openapi
 ```
 
-Once the frontend exists, its TypeScript types are generated from that same file.
+The frontend generates its TypeScript types from that same file:
+
+```bash
+cd ../frontend && npm run api:types
+```
 
 ## Layout
 
@@ -107,8 +111,8 @@ Public:
 | GET | `/healthz` | Liveness; never touches the database |
 | GET | `/readyz` | Readiness; reports 503 when the database is unreachable |
 | GET | `/api/catalog` | Every domain, chapter, subject, and objective |
-| GET | `/api/questions` | Browse questions, filtered and paginated |
-| GET | `/api/questions/{id}` | One question |
+| GET | `/api/questions` | List questions without answers, filtered and paginated |
+| GET | `/api/questions/{id}` | One question without its answer |
 
 Authentication:
 
@@ -132,7 +136,7 @@ Signed in:
 | GET | `/api/sessions/{id}/summary` | How the session went |
 | GET | `/api/progress/summary` | Accuracy by domain |
 | GET | `/api/progress/subjects` | Weakest subjects |
-| GET | `/api/progress/missed` | Questions missed at least once |
+| GET | `/api/progress/missed` | Missed questions: all ever wrong, and those not yet answered correctly |
 | GET | `/api/review-guide` | Weak areas and the concepts behind each miss |
 
 Answers and explanations never appear in a browsing or current-question response. Grading
@@ -156,4 +160,6 @@ await fetch("http://localhost:8000/api/sessions", {
 ```
 
 Study modes are `all`, `domain`, `chapter`, `subject`, `objective`, `missed`, and `practice`.
-The filtered modes need a `filter_value`; `practice` takes a `count`.
+The filtered modes need a `filter_value`; `practice` takes a `count`. For `missed`, set
+`missed_scope` to `all` (every question ever answered incorrectly) or `unresolved` (only
+questions not yet answered correctly).

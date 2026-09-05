@@ -47,17 +47,19 @@ committed.
 ## Study modes
 
 Sessions can cover everything, a single exam domain, a chapter, a subject, an objective, a
-random practice quiz of a chosen size, or only the questions previously answered incorrectly.
-Answer choices can be shuffled so a remembered letter is not mistaken for a remembered
-concept. Every answer is graded by the API, which is also the only place the correct answer
-and its explanation exist.
+random practice quiz of a chosen size, or missed questions. For missed mode you can revisit
+every question you have ever gotten wrong, or limit the session to questions you have not
+answered correctly yet. Answer choices can be shuffled so a remembered letter is not mistaken
+for a remembered concept. Every answer is graded by the API, which is also the only place the
+correct answer and its explanation exist.
 
 ## Review guide
 
 Weak areas are ranked using both how many questions were missed and the rate at which they
 were missed, so two wrong out of two outranks two wrong out of ten. Each focus area carries
 the concept behind each missed question, its explanation, and the objective and chapter to go
-back to.
+back to. The dashboard links straight into a filtered view by domain or weak subject; the
+review guide itself can also be filtered by domain from the page.
 
 ## Development
 
