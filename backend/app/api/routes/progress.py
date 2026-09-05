@@ -5,7 +5,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 
 from app.api.deps import Bank, CurrentUser, DbSession, require_user_id
-from app.api.schemas import GroupStatsResponse, MissedQuestionSet, MissedQuestionsResponse, ProgressSummaryResponse
+from app.api.schemas import (
+    GroupStatsResponse,
+    MissedQuestionSet,
+    MissedQuestionsResponse,
+    ProgressSummaryResponse,
+)
 from app.repositories import progress as progress_repository
 from app.services.statistics import group_results, lowest_performing_subjects
 

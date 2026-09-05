@@ -96,7 +96,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Questions answered incorrectly at least once */
+        /** Missed questions: all ever wrong, and those not yet answered correctly */
         get: operations["read_missed_questions_api_progress_missed_get"];
         put?: never;
         post?: never;

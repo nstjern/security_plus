@@ -54,14 +54,15 @@ export function ReviewGuidePage() {
   const guide = useReviewGuide()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const focusAreas = guide.data?.focus_areas ?? []
-  const priorityDomains = guide.data?.priority_domains ?? []
+  const focusAreas = guide.data?.focus_areas
+  const priorityDomains = guide.data?.priority_domains
   const selectedDomain = useMemo(
-    () => resolveSelectedDomain(searchParams.get('domain'), priorityDomains, focusAreas),
-    [searchParams, priorityDomains, focusAreas],
+    () =>
+      resolveSelectedDomain(searchParams.get('domain'), priorityDomains ?? [], focusAreas ?? []),
+    [searchParams, focusAreas, priorityDomains],
   )
   const selectedSubject = useMemo(
-    () => resolveSelectedSubject(searchParams.get('subject'), focusAreas),
+    () => resolveSelectedSubject(searchParams.get('subject'), focusAreas ?? []),
     [searchParams, focusAreas],
   )
 
@@ -73,9 +74,9 @@ export function ReviewGuidePage() {
     return <ErrorMessage error={guide.error} />
   }
 
-  const visibleFocusAreas = filterFocusAreas(focusAreas, selectedDomain, selectedSubject)
+  const visibleFocusAreas = filterFocusAreas(focusAreas ?? [], selectedDomain, selectedSubject)
   const totalIncorrect = guide.data.total_incorrect
-  const maxMissed = Math.max(...priorityDomains.map((domain) => domain.incorrect), 0)
+  const maxMissed = Math.max(...(priorityDomains ?? []).map((domain) => domain.incorrect), 0)
 
   function toggleDomainFilter(domain: string) {
     const next = selectedDomain === domain && selectedSubject === null ? null : domain
@@ -86,7 +87,7 @@ export function ReviewGuidePage() {
     ? `Showing ${selectedSubject}. Click a domain below to filter by domain instead.`
     : selectedDomain
       ? `Showing subjects in ${selectedDomain}. Click the domain again to show all.`
-      : `${totalIncorrect} missed answers across ${priorityDomains.length} domains`
+      : `${totalIncorrect} missed answers across ${(priorityDomains ?? []).length} domains`
 
   return (
     <div className="space-y-8">
@@ -107,7 +108,7 @@ export function ReviewGuidePage() {
         </EmptyState>
       ) : (
         <>
-          {priorityDomains.length > 0 ? (
+          {priorityDomains && priorityDomains.length > 0 ? (
             <Card>
               <CardHeading title="Where to spend your time" description={filterDescription} />
               <ul className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-1 text-sm">
