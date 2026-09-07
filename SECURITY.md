@@ -104,7 +104,7 @@ scripts from a CDN. No other route is exempt.
 | Dependencies pinned to compatible ranges | Implemented |
 | Container image scanning (Trivy) | Planned |
 | Static analysis (CodeQL) and secret scanning (Gitleaks) | Planned |
-| Dependabot update automation | Planned |
+| Dependabot update automation | Implemented |
 
 ## Data
 
