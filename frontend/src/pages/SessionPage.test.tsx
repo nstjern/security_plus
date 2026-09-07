@@ -59,9 +59,7 @@ describe('answering a question', () => {
 
     expect(await screen.findByText('Correct')).toBeInTheDocument()
     expect(screen.getByText(/emergency database maintenance/i)).toBeInTheDocument()
-    expect(
-      screen.queryByText(/password spraying against cloud sign-in/i),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/password spraying against cloud sign-in/i)).not.toBeInTheDocument()
     expect(currentQuestionFetches).toBe(1)
   })
 
