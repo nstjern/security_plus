@@ -138,7 +138,10 @@ export function useSubmitAnswer(sessionId: string) {
         }),
       ),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.session(sessionId) })
+      // exact: true so we refresh session metadata without refetching the current question.
+      // The backend advances on submit; refetching early would swap in the next question
+      // while feedback for the one just answered is still on screen.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.session(sessionId), exact: true })
       void queryClient.invalidateQueries({ queryKey: progressRoot })
       void queryClient.invalidateQueries({ queryKey: ['review-guide'] })
     },

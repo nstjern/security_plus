@@ -117,6 +117,25 @@ export const sessionQuestion: SessionQuestion = {
   },
 }
 
+export const sessionQuestion2: SessionQuestion = {
+  position: 2,
+  total: 2,
+  question: {
+    id: 'clean-d01-q001',
+    domain: 'Domain 1: General Security Concepts',
+    chapter: 'Chapter 1: Security Fundamentals',
+    subject: 'Password spraying',
+    objective: 'Mitigate social engineering',
+    question: 'Which control BEST reduces the risk of password spraying against cloud sign-in?',
+    choices: {
+      a: 'Allowing unlimited password attempts from any IP address',
+      b: 'Enforcing MFA and sign-in risk policies with lockout thresholds',
+      c: 'Publishing usernames in an internal wiki',
+      d: 'Disabling account lockout entirely',
+    },
+  },
+}
+
 export const correctAnswer: AnswerResponse = {
   result: 'correct',
   correct_choice: 'b',
