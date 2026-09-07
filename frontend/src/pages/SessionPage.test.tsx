@@ -38,6 +38,31 @@ describe('answering a question', () => {
     expect(await screen.findByRole('button', { name: 'Submit answer' })).toBeDisabled()
   })
 
+  it('keeps the answered question visible while feedback is shown', async () => {
+    let currentQuestionFetches = 0
+    server.use(
+      http.get(url('/api/sessions/:id/current-question'), () => {
+        currentQuestionFetches += 1
+        return HttpResponse.json(
+          currentQuestionFetches === 1 ? fixtures.sessionQuestion : fixtures.sessionQuestion2,
+        )
+      }),
+      http.get(url('/api/sessions/:id'), () =>
+        HttpResponse.json({ ...fixtures.studySession, answered: 1 }),
+      ),
+      http.post(url('/api/sessions/:id/answer'), () => HttpResponse.json(fixtures.correctAnswer)),
+    )
+    const { user } = renderApp(SESSION_PATH)
+
+    await user.click(await screen.findByRole('radio', { name: /PAM system/i }))
+    await user.click(screen.getByRole('button', { name: 'Submit answer' }))
+
+    expect(await screen.findByText('Correct')).toBeInTheDocument()
+    expect(screen.getByText(/emergency database maintenance/i)).toBeInTheDocument()
+    expect(screen.queryByText(/password spraying against cloud sign-in/i)).not.toBeInTheDocument()
+    expect(currentQuestionFetches).toBe(1)
+  })
+
   it('reveals the explanation once an answer is submitted', async () => {
     server.use(
       http.post(url('/api/sessions/:id/answer'), () => HttpResponse.json(fixtures.correctAnswer)),
