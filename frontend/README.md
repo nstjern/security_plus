@@ -74,7 +74,7 @@ src/test/        MSW handlers, fixtures, and a render helper
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`             | Dashboard — progress stats, accuracy by domain, weakest subjects, and a shortcut to practise missed questions. Domain and subject rows link into the review guide with that filter applied. |
 | `/study`        | Start a session — choose a study mode, including missed questions with either all ever-missed or only not-yet-correct scope.                                                                |
-| `/sessions/:id` | Answer questions — keyboard shortcuts: `a`–`d` to select, Enter to submit and advance.                                                                                                      |
+| `/sessions/:id` | Answer questions — keyboard shortcuts: `a`–`d` to select, Enter to submit, Enter again to advance.                                                                                          |
 | `/review-guide` | Review guide — weak areas ranked by domain, filterable by domain or subject via the page or URL query (`?domain=…`, `?subject=…`).                                                          |
 
 ## Tests
