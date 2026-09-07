@@ -103,7 +103,7 @@ scripts from a CDN. No other route is exempt.
 | `pip-audit` and `npm audit` fail the build on known vulnerable dependencies | Implemented |
 | Dependencies pinned to compatible ranges | Implemented |
 | Container image scanning (Trivy) | Implemented |
-| Static analysis (CodeQL) and secret scanning (Gitleaks) | Planned |
+| Static analysis (CodeQL) and secret scanning (Gitleaks) | Implemented |
 | Dependabot update automation | Implemented |
 
 ## Data
