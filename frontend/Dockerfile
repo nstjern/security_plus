@@ -22,6 +22,11 @@ RUN npm run build
 # Serves as an unprivileged user on 8080; nothing here needs root or port 80.
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 
+# Refresh Alpine packages so Trivy does not flag fixable OS CVEs in the base image.
+USER root
+RUN apk upgrade --no-cache
+USER 101
+
 ENV API_ORIGIN=http://localhost:8000
 
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
